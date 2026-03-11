@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waffle Menu</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #6b21a8;
+      font-family: Arial, sans-serif;
+    }
+
+    /* ── Top nav bar ── */
+    .navbar {
+      background-color: #6b21a8;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      position: relative;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .icon-btn:focus {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+
+    .waffle-wrap {
+      position: relative;
+    }
+
+    .waffle-btn {
+      background: none;
+      border: 2px solid transparent;
+      cursor: pointer;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .waffle-btn:focus,
+    .waffle-btn.active {
+      outline: none;
+      border-color: #fff;
+      border-radius: 8px;
+    }
+
+    .avatar-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background-color: #1d6fa8;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-btn:focus {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+
+    /* ── Waffle dropdown panel ── */
+    .waffle-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+      z-index: 300;
+      width: 380px;
+      overflow: hidden;
+    }
+
+    .waffle-panel.open {
+      display: block;
+    }
+
+    /* Icon grid */
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 28px 20px 20px;
+    }
+
+    .grid-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 10px 6px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+
+    .grid-item:hover,
+    .grid-item:focus {
+      background: #f3e8f8;
+      outline: none;
+    }
+
+    .grid-icon-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #f3e8f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b21a8;
+      flex-shrink: 0;
+    }
+
+    .grid-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6b21a8;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* Accordion section */
+    .panel-accordion {
+      background: #f5f5f5;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .accordion-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      cursor: pointer;
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-top: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .accordion-row:last-child {
+      border-bottom: none;
+    }
+
+    .accordion-row:focus {
+      outline: 2px solid #6b21a8;
+      outline-offset: -2px;
+    }
+
+    .accordion-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .accordion-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #6b21a8;
+    }
+
+    .accordion-learn {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1d6fa8;
+      text-decoration: none;
+      margin-right: 8px;
+    }
+
+    .accordion-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chevron {
+      color: #6b21a8;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .arrow-right {
+      color: #6b21a8;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    /* Learning Center expanded content */
+    .accordion-content {
+      display: none;
+      background: #fff;
+      padding: 20px 16px 24px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .accordion-content.open {
+      display: block;
+    }
+
+    .lc-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <!-- Search -->
+    <button class="icon-btn" aria-label="Search">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+
+    <!-- Bell -->
+    <button class="icon-btn" aria-label="Notifications">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </button>
+
+    <!-- Waffle -->
+    <div class="waffle-wrap">
+      <button class="waffle-btn" aria-label="App menu" aria-expanded="false" onclick="toggleWaffle(this)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="5" cy="5" r="1.6"/>
+          <circle cx="12" cy="5" r="1.6"/>
+          <circle cx="19" cy="5" r="1.6"/>
+          <circle cx="5" cy="12" r="1.6"/>
+          <circle cx="12" cy="12" r="1.6"/>
+          <circle cx="19" cy="12" r="1.6"/>
+          <circle cx="5" cy="19" r="1.6"/>
+          <circle cx="12" cy="19" r="1.6"/>
+          <circle cx="19" cy="19" r="1.6"/>
+        </svg>
+      </button>
+
+      <div class="waffle-panel" role="dialog" aria-label="App menu">
+        <!-- Icon grid -->
+        <div class="panel-grid">
+          <!-- Video Library -->
+          <button class="grid-item">
+            <div class="grid-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2C9 2 7 4.5 7 4.5S5 2 2 4c0 0 1 2 3 2.5C3 8 2 10 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10c0-2-.6-3.86-1.63-5.42C22.5 6.1 23 4.5 23 4.5 20 3 18 4.5 18 4.5S15 2 12 2z"/>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                <line x1="9" y1="10" x2="9.01" y2="10"/>
+                <line x1="15" y1="10" x2="15.01" y2="10"/>
+              </svg>
+            </div>
+            <span class="grid-label">Video Library</span>
+          </button>
+
+          <!-- Playlists -->
+          <button class="grid-item">
+            <div class="grid-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7h18M3 12h18M3 17h12"/>
+                <rect x="15" y="13" width="6" height="7" rx="1"/>
+                <polygon points="17,14.5 20,16.5 17,18.5" fill="currentColor" stroke="none"/>
+              </svg>
+            </div>
+            <span class="grid-label">Playlists</span>
+          </button>
+
+          <!-- Favorites -->
+          <button class="grid-item">
+            <div class="grid-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+            <span class="grid-label">Favorites</span>
+          </button>
+
+          <!-- Video Activities -->
+          <button class="grid-item">
+            <div class="grid-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                <path d="M8 10h8M8 14h5"/>
+              </svg>
+            </div>
+            <span class="grid-label">Video Activities</span>
+          </button>
+
+          <!-- Account Library -->
+          <button class="grid-item">
+            <div class="grid-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                <polyline points="12,11 12,17"/>
+                <polyline points="9,14 12,17 15,14"/>
+              </svg>
+            </div>
+            <span class="grid-label">Account Library</span>
+          </button>
+
+          <!-- K12 Hub -->
+          <button class="grid-item">
+            <div class="grid-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>
+                <rect x="9" y="13" width="6" height="8"/>
+                <circle cx="12" cy="9" r="1.5"/>
+                <path d="M11 9h2"/>
+              </svg>
+            </div>
+            <span class="grid-label">K12 Hub</span>
+          </button>
+        </div>
+
+        <!-- Accordion rows -->
+        <div class="panel-accordion">
+          <button class="accordion-row" onclick="toggleLearningCenter(this)" aria-expanded="false">
+            <span class="accordion-title">Learning Center</span>
+            <div class="accordion-right">
+              <a class="accordion-learn" href="#" onclick="return false;">Learn More</a>
+              <span class="chevron">∨</span>
+            </div>
+          </button>
+          <div class="accordion-content" id="lc-content">
+            <div class="lc-grid">
+              <!-- My Active Courses -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="7" y1="8" x2="17" y2="8"/>
+                    <line x1="7" y1="12" x2="17" y2="12"/>
+                    <line x1="7" y1="16" x2="13" y2="16"/>
+                  </svg>
+                </div>
+                <span class="grid-label">My Active Courses</span>
+              </button>
+              <!-- My Course History -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"/>
+                    <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+                    <polyline points="12 7 12 12 15 14"/>
+                  </svg>
+                </div>
+                <span class="grid-label">My Course History</span>
+              </button>
+              <!-- Course Management -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Course Management</span>
+              </button>
+              <!-- View Student Progress -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                    <polyline points="3 17 6 14 10 18 14 10 18 14"/>
+                  </svg>
+                </div>
+                <span class="grid-label">View Student Progress</span>
+              </button>
+            </div>
+          </div>
+          <button class="accordion-row" onclick="toggleReports(this)" aria-expanded="false">
+            <span class="accordion-title">Reports</span>
+            <div class="accordion-right">
+              <span class="chevron">∨</span>
+            </div>
+          </button>
+          <div class="accordion-content" id="reports-content">
+            <div class="lc-grid">
+              <!-- Library Reports -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6"/>
+                    <line x1="8" y1="12" x2="21" y2="12"/>
+                    <line x1="8" y1="18" x2="21" y2="18"/>
+                    <line x1="3" y1="6" x2="3.01" y2="6"/>
+                    <line x1="3" y1="12" x2="3.01" y2="12"/>
+                    <line x1="3" y1="18" x2="3.01" y2="18"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Library Reports</span>
+              </button>
+              <!-- Activity Reports -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                    <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Activity Reports</span>
+              </button>
+            </div>
+          </div>
+          <button class="accordion-row" onclick="toggleCalibrate(this)" aria-expanded="false">
+            <span class="accordion-title">Calibrate</span>
+            <div class="accordion-right">
+              <span class="chevron">∨</span>
+            </div>
+          </button>
+          <div class="accordion-content" id="calibrate-content">
+            <div class="lc-grid">
+              <!-- Calibration Activities -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                    <line x1="9" y1="7" x2="15" y2="7"/>
+                    <line x1="9" y1="11" x2="15" y2="11"/>
+                    <line x1="9" y1="15" x2="12" y2="15"/>
+                    <circle cx="9" cy="7" r="0.5" fill="currentColor"/>
+                    <circle cx="9" cy="11" r="0.5" fill="currentColor"/>
+                    <circle cx="9" cy="15" r="0.5" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Calibration Activities</span>
+              </button>
+              <!-- Calibration Reports -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 17 7 13 11 15 15 9 21 17"/>
+                    <line x1="3" y1="21" x2="21" y2="21"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Calibration Reports</span>
+              </button>
+            </div>
+          </div>
+          <button class="accordion-row" onclick="toggleAccountMgmt(this)" aria-expanded="false">
+            <span class="accordion-title">Account Management</span>
+            <div class="accordion-right">
+              <span class="chevron">∨</span>
+            </div>
+          </button>
+          <div class="accordion-content" id="acctmgmt-content">
+            <div class="lc-grid">
+              <!-- Accounts -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Accounts</span>
+              </button>
+              <!-- Users -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Users</span>
+              </button>
+              <!-- Cohorts -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="10" y="2" width="4" height="4" rx="1"/>
+                    <rect x="2" y="18" width="4" height="4" rx="1"/>
+                    <rect x="10" y="18" width="4" height="4" rx="1"/>
+                    <rect x="18" y="18" width="4" height="4" rx="1"/>
+                    <line x1="12" y1="6" x2="12" y2="10"/>
+                    <line x1="4" y1="10" x2="20" y2="10"/>
+                    <line x1="4" y1="10" x2="4" y2="18"/>
+                    <line x1="12" y1="10" x2="12" y2="18"/>
+                    <line x1="20" y1="10" x2="20" y2="18"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Cohorts</span>
+              </button>
+              <!-- Share Playlists -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Share Playlists</span>
+              </button>
+              <!-- User Report -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="9" y1="13" x2="15" y2="13"/>
+                    <line x1="9" y1="17" x2="13" y2="17"/>
+                  </svg>
+                </div>
+                <span class="grid-label">User Report</span>
+              </button>
+              <!-- Frameworks -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                    <polyline points="2 17 12 22 22 17"/>
+                    <polyline points="2 12 12 17 22 12"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Frameworks</span>
+              </button>
+              <!-- Roles & Rights -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                    <path d="M16 11l1.5 1.5L21 9"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Roles &amp; Rights</span>
+              </button>
+              <!-- Upload TCH Videos -->
+              <button class="grid-item">
+                <div class="grid-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="16 16 12 12 8 16"/>
+                    <line x1="12" y1="12" x2="12" y2="21"/>
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                  </svg>
+                </div>
+                <span class="grid-label">Upload TCH Videos</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avatar -->
+    <button class="avatar-btn" aria-label="User profile">VS</button>
+  </nav>
+
+  <script>
+    function closeAccordion(id, btn) {
+      const content = document.getElementById(id);
+      if (content.classList.contains('open')) {
+        content.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.querySelector('.chevron').textContent = '∨';
+      }
+    }
+
+    function toggleLearningCenter(btn) {
+      const content = document.getElementById('lc-content');
+      const isOpen = content.classList.contains('open');
+      closeAllExcept('lc-content');
+      content.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      btn.querySelector('.chevron').textContent = isOpen ? '∨' : '∧';
+    }
+
+    const accordions = [
+      { id: 'lc-content',        sel: '[onclick="toggleLearningCenter(this)"]' },
+      { id: 'reports-content',   sel: '[onclick="toggleReports(this)"]' },
+      { id: 'calibrate-content', sel: '[onclick="toggleCalibrate(this)"]' },
+      { id: 'acctmgmt-content',  sel: '[onclick="toggleAccountMgmt(this)"]' },
+    ];
+
+    function closeAllExcept(keepId) {
+      accordions.forEach(a => {
+        if (a.id !== keepId) {
+          const btn = document.querySelector(a.sel);
+          if (btn) closeAccordion(a.id, btn);
+        }
+      });
+    }
+
+    function toggleReports(btn) {
+      const content = document.getElementById('reports-content');
+      const isOpen = content.classList.contains('open');
+      closeAllExcept('reports-content');
+      content.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      btn.querySelector('.chevron').textContent = isOpen ? '∨' : '∧';
+    }
+
+    function toggleCalibrate(btn) {
+      const content = document.getElementById('calibrate-content');
+      const isOpen = content.classList.contains('open');
+      closeAllExcept('calibrate-content');
+      content.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      btn.querySelector('.chevron').textContent = isOpen ? '∨' : '∧';
+    }
+
+    function toggleAccountMgmt(btn) {
+      const content = document.getElementById('acctmgmt-content');
+      const isOpen = content.classList.contains('open');
+      closeAllExcept('acctmgmt-content');
+      content.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      btn.querySelector('.chevron').textContent = isOpen ? '∨' : '∧';
+    }
+
+    // Auto-close open accordion when tabbing to the next accordion button
+    document.addEventListener('DOMContentLoaded', function () {
+      accordions.forEach((a, i) => {
+        const btn = document.querySelector(a.sel);
+        if (btn) {
+          btn.addEventListener('focus', function () {
+            // Close all other accordions
+            accordions.forEach((other, j) => {
+              if (j !== i) {
+                const ob = document.querySelector(other.sel);
+                if (ob) closeAccordion(other.id, ob);
+              }
+            });
+          });
+        }
+      });
+    });
+
+    function toggleWaffle(btn) {
+      const panel = btn.nextElementSibling;
+      const isOpen = panel.classList.contains('open');
+      panel.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      btn.classList.toggle('active', !isOpen);
+    }
+
+    // Close panel when focus leaves the waffle-wrap
+    document.addEventListener('focusin', function (e) {
+      if (!e.target.closest('.waffle-wrap')) {
+        document.querySelectorAll('.waffle-panel.open').forEach(p => {
+          p.classList.remove('open');
+          p.previousElementSibling.setAttribute('aria-expanded', 'false');
+          p.previousElementSibling.classList.remove('active');
+        });
+      }
+    });
+
+    // Close panel on outside click
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.waffle-wrap')) {
+        document.querySelectorAll('.waffle-panel.open').forEach(p => {
+          p.classList.remove('open');
+          p.previousElementSibling.setAttribute('aria-expanded', 'false');
+          p.previousElementSibling.classList.remove('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>
